@@ -24,5 +24,3 @@ npm run build
 후에 '/dist'의 파일들 'm.echo.exc.co.kr'에 복사/덮어쓰기    
 npm run build:test  
 후에 '/test'의 파일들 'm.echo.exc.co.kr/test'에 복사/덮어쓰기    
-
-npm unr build
