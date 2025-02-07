@@ -1,0 +1,78 @@
+
+.icon-bell{
+    display: inline-block;
+    vertical-align: top;
+    background: url(../img/bell-none.png) no-repeat 50% 50%;
+    width: 23.5px;
+    height: 23.5px;
+    background-size: auto 100%;
+    &.active{
+      background-image: url(../img/bell.png);
+    }
+}
+
+.icon-pin{
+    display: inline-block;
+    vertical-align: top;
+    background: url(../img/pin.png) no-repeat 50% 50%;
+    width: 17px;
+    height: 16.5px;
+    background-size: auto 100%;
+    .active &{
+      background-image: url(../img/pin-active.png);
+    }
+}
+.icon-close{
+  display: inline-block;
+  vertical-align: top;
+  background: url(../img/close.png) no-repeat 50% 50%;
+  width: 10px;
+  height: 10px;
+  background-size: auto 100%;
+}
+
+.icon-back{
+    display: inline-block;
+    vertical-align: top;
+    background: url(../img/back.png) no-repeat 50% 50%;
+    width: 27px;
+    height: 19px;
+    background-size: auto 100%;
+}
+
+.icon-toggle{
+    display: inline-block;
+    vertical-align: top;
+    background: url(../img/toggle.png) no-repeat 50% 50%;
+    width: 5.5px;
+    height: 23px;
+    background-size: auto 100%;
+}
+
+
+
+    
+.icon-excel{
+    display: inline-block;
+    width: 24px;
+    height: 30px;
+    background: url(../img/excel.png) no-repeat;
+    background-size: 100% auto;
+}
+
+.icon-word{
+display: inline-block;
+width: 24px;
+height: 30px;
+background: url(../img/word.png) no-repeat;
+background-size: 100% auto;
+}
+
+
+.icon-ppt{
+display: inline-block;
+width: 24px;
+height: 30px;
+background: url(../img/ppt.png) no-repeat;
+background-size: 100% auto;
+}
