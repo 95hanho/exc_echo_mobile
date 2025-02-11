@@ -3,6 +3,7 @@
 html {
 	// height: calc(var(--vh, 1vh) * 100);
 	// position: relative;
+	height: 100%;
 }
 body,
 #app,
@@ -145,6 +146,9 @@ body,
 			transform: translateY(0);
 		}
 	}
+}
+.dialog-container {
+	user-select: none;
 }
 /*  */
 .outline {

@@ -40,6 +40,12 @@
                 <span>요청/건의</span><i></i>
             </a>
             {/if}
+            {#if get_loginType() != 'valley'}
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfF2yInUC5rWdyFMDu4gbuYrr0ZT4UuGlGO7qp5VU6O9GVOHg/viewform" target="_blank">
+                <span>시스템 장애신고</span><i></i>
+            </a>
+            {/if}
+            
             {#if $modal_dialog_list && get_loginType() == 'ridge'}
             <a href="#"><span>계정설정</span><i></i></a>
             {/if}

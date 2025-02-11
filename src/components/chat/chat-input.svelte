@@ -1,5 +1,5 @@
 <script>
-	import { createEventDispatcher, tick } from "svelte";
+	import { createEventDispatcher, onDestroy, onMount, tick } from "svelte";
 	import { fade } from "svelte/transition";
 	import { isTest } from "../../lib/env";
 	import { modal_alert, modal_chatAdd, modal_chatAdd_type } from "../../store/modalSlice";
@@ -24,8 +24,9 @@
     let chat_txt = ""; // 입력텍스트
     let fileEle = null; // 파일입력ELe
     let chat_file = null; // 파일
-    let request_message = false; // 확인요청메시지인지
     export const reset_chat_file = () => chat_file = null;
+    let request_message = false; // 확인요청메시지인지
+    export const reset_request_message = () => request_message = false;
     // 채팅 줄바꿈에 따라 rows 조절(최대 4)
     let chat_row = 1;
     $: if((chat_txt.match(/\n/g) || []).length > -1) {
@@ -106,7 +107,6 @@
         if(response_open) dispatch('response_open_false');
         ing_sendChat = false;
     }
-
 </script>
 
 
@@ -181,6 +181,9 @@
 </div>
 
 <style>
+#chatInput {
+    position:fixed;
+}
 #chatInput .bottom-btn {
     position: absolute;
     bottom:calc(100% + 7px);

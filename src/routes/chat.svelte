@@ -1,5 +1,4 @@
 <script>
-	import { textinput_open } from './../store/uiSlice.js';
 	import { onDestroy, onMount, tick } from "svelte";
 	import { chatService } from "../api";
 	import { modal_alert, modal_chatAdd, modal_chatAdd_type, modal_chatReact, modal_chatReact_type } from "../store/modalSlice";
@@ -40,13 +39,7 @@
     let readend_chat = null; // 읽어야하는 마지막 채팅
     let read_ele = null; // 읽시시작해야하는 채팅 element
     let chatWrap_hidden = false; // 채팅창 잠시 가리기
-    // 반응리스트 예시
-    const example_react_list = [
-        {member_no:"22", name:"정진환"},
-        {member_no:"23", name:"오정택"},
-        {member_no:"50000", name:"한호성"},
-        {member_no:"50001", name:"김효경"},
-    ];
+    
     // 채팅가져오기
     const get_chat = async (es, req_page, no_read) => {
         const obj = { echo_id };
@@ -105,6 +98,13 @@
             if(!has_local || (has_local && not_equal_chat_list)) {
                 if(req_page == undefined) {
                     /* TEST */
+                    // 반응리스트 예시
+                    const example_react_list = [
+                        {member_no:"22", name:"정진환"},
+                        {member_no:"23", name:"오정택"},
+                        {member_no:"50000", name:"한호성"},
+                        {member_no:"50001", name:"김효경"},
+                    ];
                     data.old_chat_list.map((v) => {
                         v.react_open = false;
                         v.react_list = example_react_list;
@@ -224,9 +224,7 @@
     }
     // 반응리스트 '자신' 제외 리스트
     const react_list_except_me = (in_list) => {
-        const list = [...in_list];
-        list.splice(list.findIndex((v) => $userInfo.member_no == v.member_no), 1);
-        return list;
+        return in_list.filter((v) => $userInfo.member_no != v.member_no);
     }
 
     /* 채팅입력관련 ========================================> */
@@ -245,18 +243,21 @@
     let reactPopup_index = null;
     // 채팅 touchstart
     const chatContent_touchstart = (e, chat) => {
-        chat_input_ref.reset_chat_file();
-        touch_chat_id = chat.chat_id;
-        reactPopup_index = setTimeout(() => {
-            e.preventDefault();
-            response_chat = chat;
-            if(chat.member_no == $userInfo.member_no) response_chat.writer = "나";
-            if(isTest() && chat.member_no == $userInfo.member_no) {
-                modal_chatReact.open();
-            } else {
-                response_open = true;
-            }
-        },  500);
+        if(!e.target.closest(".check-usr") && !e.target.closest(".message-check")) {
+            chat_input_ref.reset_chat_file();
+            chat_input_ref.reset_request_message();
+            touch_chat_id = chat.chat_id;
+            reactPopup_index = setTimeout(() => {
+                e.preventDefault();
+                response_chat = chat;
+                if(chat.member_no == $userInfo.member_no) response_chat.writer = "나";
+                if(isTest() && chat.member_no == $userInfo.member_no) {
+                    modal_chatReact.open();
+                } else {
+                    response_open = true;
+                }
+            },  500);
+        }
     }
     // 채팅 touchend
     const chatContent_touchend = () => {
@@ -345,7 +346,10 @@
     let asideOpen = false; // 메뉴바 오픈
     const change_asideOpen = () => asideOpen = !asideOpen;
 
+
     onMount(async () => {
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
         // updateViewportHeight();
         const echo_record = get_echo_record(echo_id);
         if(echo_record) {
@@ -353,33 +357,29 @@
         } else {
             await get_chat();
         }
-        // textinput_open.set(true);
     });
     onDestroy(() => {
-        $textinput_open = false;
+        document.body.style.overflow = 'auto';
+        document.documentElement.style.overflow = 'auto';
         store_scroll_position();
     });
 </script>
 
 <div id="chat" in:fade={{duration: 500}} class:theme-valley={get_loginType() == 'valley'}
     class:theme-tree={get_loginType() == 'tree'}>
-    {#if !$textinput_open}
     <ChatHeader {change_asideOpen} {echo_title}/>
-    {/if}
     <div id="chatContent" class="main-content">
-        {#if get_loginType() != 'tree' && !$textinput_open}
+        {#if get_loginType() != 'tree'}
         <ChatNav {chatroom_list} on:store_scroll_position={store_scroll_position} />
         {/if}
         <!-- chat -->
-        <div class="chat-container" class:textinput-open={$textinput_open}>
+        <div class="chat-container">
             {#if chatWrap_hidden}
             <Lodding />
             {/if}
             <div id="chatWrap" bind:this={chatWrap_ele} class="chart-main"
                 class:visible-hidden={chatWrap_hidden}
-                style={`height: ${$textinput_open ? `calc(var(--vh, 1vh) * 100 - 13px
-                 - ${66 + chatWrap_calc_height}px);`
-                 : `calc(100% - ${66 + chatWrap_calc_height}px);`}`}>
+                style={`height: calc(100% - ${chatWrap_calc_height}px);`}>
                 {#if add_loding}
                 <Lodding />
                 {/if}
@@ -440,9 +440,9 @@
                                     {/if} 
                                 {/if}
                             {/if}
-                            {#if chat.member_no == $userInfo.member_no}
+                            {#if chat.member_no == $userInfo.member_no && chat.react_list.length > 0}
                                 {#if isTest()}
-                            <button class="check-usr" on:click={() => show_react(chat)}><span>8</span></button>
+                            <button class="check-usr" on:click|stopPropagation={() => show_react(chat)}><span>8</span></button>
                                 {/if}
                             {/if}
                         </div>
@@ -471,15 +471,16 @@
         <!-- chat -->
     </div>
 
-    {#if !$textinput_open}
     <ChatAside {asideOpen} on:change_asideOpen={change_asideOpen} echo_id={params.echo_id}
         echostep={store_echostep} />
-    {/if}
 </div>
 
 <style>
 #chat {
-
+    height: 100%;
+}
+#chatContent {
+    height: calc(100% - 64px);
 }
 #chat, .main-content {
     /* width:100%; */
@@ -490,15 +491,13 @@
 }
 .chat-container {
     /* height: 395px; */
-    height:calc(var(--vh, 1vh)* 100 - 138px);
+    /* height:calc(var(--vh, 1vh)* 100 - 138px); */
+    /* height: calc(100vh - 292px); */
+    height: calc(100% - 70px);
+    /* height:auto; */
 }
 .theme-tree .chat-container {
-    height:calc(var(--vh, 1vh)* 100 - 61px);
-}
-.chat-container.textinput-open {
-    height: calc(var(--vh, 1vh) * 100);
-    /* position:static; */
-    /* height:200px; */
+    height: calc(100%);
 }
 #chatWrap {
     padding-bottom: 10px;

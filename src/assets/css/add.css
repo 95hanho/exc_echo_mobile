@@ -1,5 +1,9 @@
 @charset "UTF-8";
 /* 기본설정 */
+html {
+  height: 100%;
+}
+
 body,
 #app,
 #wrap {
@@ -106,6 +110,12 @@ body,
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.dialog-container {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
 }
 
 /*  */

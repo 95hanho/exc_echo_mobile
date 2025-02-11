@@ -5,7 +5,6 @@
 	import { cookies } from "./cookies";
 	import { loginOn, userInfo } from "./store/authSlice";
 	import Modal from "./components/modal.svelte";
-	import { textinput_open } from "./store/uiSlice";
 	import { get_loginType } from "./lib/local_store";
 
   $:loginType = $userInfo.type
@@ -18,16 +17,13 @@
   });
 </script>
 
-<div id="wrap" class="wrapper" class:login-route={$location === '/login'}
-  class:chat-open={$textinput_open}>
+<div id="wrap" class="wrapper" class:login-route={$location === '/login'}>
   <main class:theme-valley={loginType == 'valley'}
   class:theme-tree={loginType == 'tree'}>
     <Router {routes} />
   </main>
 </div>
-{#if !$textinput_open}
 <Modal />
-{/if}
 
 <style>
 #wrap {
