@@ -12,6 +12,7 @@ dist
 dist-ssr
 test
 *.local
+front_BACKUP
 
 # Editor directories and files
 .vscode/*

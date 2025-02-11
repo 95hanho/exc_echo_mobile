@@ -9,11 +9,12 @@
 	import ChatAside from "../components/chat-aside.svelte";
 	import { userInfo } from "../store/authSlice";
 	import { fade } from "svelte/transition";
-    import moment from "moment";
+    import moment from "moment/moment";
 	import { chat_scroll_near_last, isdivivedDate, not_scroll, scroll_move_last, scroll_move_read, shake_message, updateViewportHeight, } from "../lib/ui";
 	import Lodding from '../components/lodding.svelte';
 	import { isTest, testlog } from "../lib/env";
 	import { get_echo_record, get_loginType, set_echo_record, set_echo_record_last_scroll } from '../lib/local_store.js';
+	import ChatInput from '../components/chat/chat-input.svelte';
 
     export let params = {};
     $: echo_id = params.echo_id; // 에코아이디
@@ -34,6 +35,7 @@
     let add_loding = false; // 채팅 더보기 로딩 보여줄지
     let echo_chat_total_count = 0; // 총 페이지 수
     let last_echostep_visit_date = null; // 전에 접속한 시점
+    const change_last_echostep_visit_date = (e) => last_echostep_visit_date = e.detail.value;
     let readstart_chat = null; // 읽기시작해야하는 채팅
     let readend_chat = null; // 읽어야하는 마지막 채팅
     let read_ele = null; // 읽시시작해야하는 채팅 element
@@ -104,6 +106,7 @@
                 if(req_page == undefined) {
                     /* TEST */
                     data.old_chat_list.map((v) => {
+                        v.react_open = false;
                         v.react_list = example_react_list;
                     });
                     /* TEST */
@@ -168,10 +171,10 @@
         }
     }
     $: if(chatWrap_ele && chat_list.length > 0) {
-        change_chat_list();
+        when_to_change_chat_list();
     }
     // 채팅리스트 갯수가 변화할 때
-    const change_chat_list = async () => {
+    const when_to_change_chat_list = async () => {
         readstart_chat = null;
         readend_chat = null;
         let readstart_chat_store = null;
@@ -227,91 +230,12 @@
     }
 
     /* 채팅입력관련 ========================================> */
-    let chat_txt = ""; // 입력텍스트
-    let fileEle = null; // 파일입력ELe
-    let chat_file = null; // 파일
-    // 채팅 줄바꿈에 따라 rows 조절(최대 4)
-    let chat_row = 1;
-    $: if((chat_txt.match(/\n/g) || []).length > -1) {
-        let row = 1 + (chat_txt.match(/\n/g) || []).length;
-        chat_row = row > 4 ? 4 : row;
-    }
+    let chat_input_ref = null;
     let chatWrap_calc_height = 0; // 채팅입력 높이에 따라 채팅리스트창 높이조절
-    let replyContainer_ele = null; // 답장 element
-    let replyContainer_ele2 = null; // 파일 element
-    $:if(chat_row || !response_open || replyContainer_ele) {
-        change_chatWrap_calc_height();
-    }
-    // 채팅입력 높이에 따라 채팅리스트창 높이조절
-    const change_chatWrap_calc_height = async () => {
-        let reply_height = replyContainer_ele ? replyContainer_ele.clientHeight : 0; // 답장 높이이
-        let row = chat_row;
-        chatWrap_calc_height = (row - 1) * 12.3 + reply_height;
-        // 
-        if(chatWrap_ele && chat_scroll_near_last(chatWrap_ele)) {
-            if(!read_ele) {
-                await tick();
-                scroll_move_last(chatWrap_ele);
-            }
-        }
-    }
-    // 메시지 입력
-    let ing_sendChat = false;
-    const sendChat = async (e) => {
-        // console.log(chat_file);
-        // return;
-        if(!chat_txt) {
-            modal_alert.open("메시지를 입력해주세요.");
-            return;
-        }
-        if(ing_sendChat) return;
-        ing_sendChat = true;
-        const obj = {echo_id, chat_txt};
-        if(get_loginType() != 'tree') {
-            obj.echostep = echostep;
-        }
-        if(response_open) obj.chat_id = response_chat.chat_id;
-        await chatService.set_chat(obj).then(async (data) => {
-            // console.log(data);
-            if(data.latest_chat_list) chat_list.push(...data.latest_chat_list);
-            chat_list.push({
-                chat_id: data.chat_id,
-                content: chat_txt,
-                member_no: $userInfo.member_no,
-                react_list: [],
-                writer: $userInfo.name,
-                createdAt: moment(new Date()).format('YYYY-MM-DD hh:mm:ss'),
-                respond: obj.chat_id ? {
-                    ...response_chat,
-                } : false,
-            });
-            chat_list = chat_list;
-            await tick();
-            scroll_move();
-            last_echostep_visit_date = new Date();
-            chat_txt = "";
-            response_open = false;
-            response_chat = null;
-        }).catch((err) => {
-            modal_alert.open('일시적 오류 발생. <br />다시 시도해주세요.');
-        });
-        if(response_open) response_open = false;
-        ing_sendChat = false;
-    }
-    // 채팅 추가 팝업 동작
-    $:if($modal_chatAdd_type) {
-        if($modal_chatAdd_type == 1) {
-            // 파일업로드
-            fileEle.click();
-        } else if($modal_chatAdd_type == 2) {
-            // 확인요청메시지
-        }
-        //
-        modal_chatAdd_type.set(0);
-    }
+    const change_chatWrap_calc_height = (e) => chatWrap_calc_height = e.detail.value;
+
     // 파일 업로드
     const file_upload = () => {
-
     }
 
     /* 채팅 누르고 있기 팝업 관련 ========================================> */
@@ -321,7 +245,7 @@
     let reactPopup_index = null;
     // 채팅 touchstart
     const chatContent_touchstart = (e, chat) => {
-        chat_file = null; // 파일은 초기화
+        chat_input_ref.reset_chat_file();
         touch_chat_id = chat.chat_id;
         reactPopup_index = setTimeout(() => {
             e.preventDefault();
@@ -498,97 +422,51 @@
                             </div>
                             {/if}
                             <p>{@html chat.content.replace(/\n/g, "<br />")}</p>
-                            {#if chat.file}
+                            {#if isTest()}
+                                {#if chat.file}
                             <div class="file-link-zone">
-                                <a href="#" class="file-link">{chat.file}</a>
+                                <a href={chat.file.name} download class="file-link">{chat.file.name}</a>
                             </div>
+                                {/if}
                             {/if}
                             {#if chat.member_no != $userInfo.member_no}
                                 {#if isTest()}
                                     {#if chat.react_list.some((v) => v.member_no == chat.member_no)}
-                                <button type="button" class="message-check" on:click={() => {
-                                    show_react(chat);
-                                }}></button>
+                            <button type="button" class="message-check" on:click={() => {
+                                show_react(chat);
+                            }}></button>
                                     {:else}
-                                <button type="button" class="message-check off" on:click></button>
+                            <button type="button" class="message-check off" on:click></button>
                                     {/if} 
                                 {/if}
                             {/if}
                             {#if chat.member_no == $userInfo.member_no}
                                 {#if isTest()}
-                            <div class="check-usr"><span>8</span></div>
+                            <button class="check-usr" on:click={() => show_react(chat)}><span>8</span></button>
                                 {/if}
                             {/if}
                         </div>
                     </div>
-                    {#if isTest() && chat.react_list.length > 0 && chat.react_open}
-                    <p class="react-member" in:fade={{duration:300}} out:fade={{duration:500}}>
-                        {#each react_list_except_me(chat.react_list) as react, index}
-                        <span>{react.name}{#if react_list_except_me(chat.react_list).length - 1 != index},{/if}</span>    
-                        {/each}
-                    </p>
-                    {/if}
                 </div>
+                {#if isTest() && chat.react_list.length > 0 && chat.react_open}
+                <p class="react-member" class:my={chat.member_no == $userInfo.member_no}
+                    in:fade={{duration:300}} out:fade={{duration:500}}>
+                    {#each react_list_except_me(chat.react_list) as react, index}
+                    <span>{react.name}{#if react_list_except_me(chat.react_list).length - 1 != index}, {/if}</span>    
+                    {/each}
+                </p>
+                {/if}
                 {/each}
             </div>
         
-            <!-- 입력창 -->
-            <div id="chatInput" class="chat-input">
-                {#if bottom_btn_on}
-                    {#if readend_chat}
-                <button class="bottom-latest-btn" in:fade={{duration:500}} out:fade={{duration:500}}
-                    on:click={() => scroll_move_last(chatWrap_ele)}>
-                    <span>
-                        <b>{readend_chat.writer}{readend_chat.position ? ` ${readend_chat.position}` : ''}</b>: {readend_chat.content}
-                    </span>
-                    <i class="fas fa-lg fa-fw me-10px fa-arrow-down"></i>
-                </button>
-                    {:else}
-                <button in:fade={{duration:500}} out:fade={{duration:500}}
-                    class="bottom-btn" on:click={() => scroll_move_last(chatWrap_ele)}>
-                    <i class="fas fa-arrow-alt-circle-right fa-rotate-90"></i>
-                </button>
-                    {/if}
-                {/if}
-                {#if response_open}
-                <div bind:this={replyContainer_ele} class="reply-container" in:fade={{duration:500}}>
-                    <strong class="reply-target">{response_chat.writer}에게 답장</strong>
-                    <p class="message">
-                        {response_chat.content}
-                    </p>
-                    <button class="close-btn" on:click={() => {
-                        response_open = false;
-                        response_chat = null;
-                    }}></button>
-                </div>
-                {/if}
-                {#if chat_file && chat_file.length > 0}
-                <div bind:this={replyContainer_ele2} class="reply-container" in:fade={{duration:500}}>
-                    <p class="message" style="padding-top: 0">
-                        {chat_file[0].name}
-                    </p>
-                    <button class="close-btn" on:click={() => chat_file = null}></button>
-                </div>
-                {/if}
-                {#if isTest()}
-                <button type="button" class="btn-file" 
-                    on:click={() => {
-                        response_open = false;
-                        response_chat = null;
-                        modal_chatAdd.open();
-                    }}>
-                </button>
-                {/if}
-                <div class="hide">
-                    <input type="file" id="chat-file" bind:this={fileEle} bind:files={chat_file}>
-                </div>
-                <div class="input-g">
-                    <textarea name="" id="chat_textarea" rows={chat_row} class="input-item"
-                        class:extend={chat_txt.includes("\n")}
-                     bind:value={chat_txt} placeholder="메세지 입력" />
-                    <button type="button" class="btn-send" on:click={sendChat}></button>
-                </div>
-            </div>
+            <ChatInput bind:this={chat_input_ref} {bottom_btn_on} {readend_chat} {chatWrap_ele} 
+                on:scroll_move_last={() => scroll_move_last(chatWrap_ele)} 
+                {response_open} on:response_open_false={() => response_open = false}
+                {response_chat} on:response_chat_reset={() => response_chat = null}
+                {echo_id} {echostep} {chat_list} {read_ele}
+                on:scroll_move={scroll_move} on:change_levd={change_last_echostep_visit_date}
+                on:change_chatWrap_calc_height={change_chatWrap_calc_height}
+                on:change_chat_list={(e) => chat_list = e.detail.value} />
         </div>
         <!-- chat -->
     </div>
@@ -648,10 +526,13 @@
     background-image: url("/template/img/icon_check_off.png");
 }
 .react-member {
+    display: block;
     color:#2435b2;
     font-size:12px;
-    padding-top:10px;
-    padding-left:10px;
+    padding:10px;
+}
+.react-member.my {
+    text-align: right;
 }
 .react-member>span {
     display: inline-block;
@@ -692,36 +573,5 @@
 }
 .shake {
   animation: shake 2s ease-in-out;
-}
-#chatInput .bottom-btn {
-    position: absolute;
-    bottom:calc(100% + 7px);
-    right:15px;
-}
-#chatInput .bottom-btn i {
-    font-size:30px;
-}
-#chatInput .bottom-latest-btn {
-    bottom:calc(100% + 7px);
-    left:10px;
-    position: absolute;
-    width:calc(100% - 20px);
-    background-color: #fff;
-    border-radius: 10px;
-    height:35px;
-    padding: 5px 15px;
-    border:1px solid #eee;
-    box-shadow: 1px 1px 1px #aaa;
-}
-#chatInput .bottom-latest-btn span {
-    display: inline-block;
-    width: calc(100% - 50px);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    text-align: left;
-}
-#chatInput .bottom-latest-btn i {
-    vertical-align: baseline;
 }
 </style>

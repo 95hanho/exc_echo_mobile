@@ -91,11 +91,7 @@
             sc_keyword,
         }).then((data) => {
             result_keyword = sc_keyword;
-            if(data.echo_list.length == 0) {
-                modal_alert.open('검색 결과가 없습니다.');
-            } else {
-                set_search_keyword(sc_keyword);
-            }
+            if(data.echo_list.length > 0) set_search_keyword(sc_keyword);
             return data; 
         }).catch((err) => {
             modal_alert.open('서버 오류. 문의 바람.');
@@ -274,7 +270,12 @@ class:theme-tree={get_loginType() == 'tree'}>
                 {/each}
                 {:else}
                 <div style="padding-top: 50px;text-align: center;">
-                    <p style="color:#a4a4a4">결과값이 없습니다.</p>
+                    <p style="color:#a4a4a4">
+                        결과값이 없습니다.
+                        {#if sc_type != "PROJECT_SUSSCESS_CODE"}
+                        <br />(고객사, AM 검색조건은 운영기간이 지난 과정은 조회 되지 않습니다.)
+                        {/if}
+                    </p>
                 </div>
                 {/if}
             </div>
