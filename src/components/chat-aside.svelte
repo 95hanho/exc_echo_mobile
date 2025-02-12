@@ -7,7 +7,7 @@
 	import { isTest } from '../lib/env';
 	import { addService } from '../api';
 
-    $:userType = $userInfo.type;
+    $: userType = $userInfo.type;
 
     export let echo_id;
     export let asideOpen;
@@ -36,7 +36,7 @@
         });
     }
 
-    $:if(echostep) {
+    $:if(asideOpen && echostep) {
         get_document();
     }
  </script>
@@ -62,12 +62,11 @@
             {:else}
             <a href="#" on:click|preventDefault><span>과정개요(준비중)</span><i></i></a>
             {#await get_document_await then data}
-            {#if echostep == 2 || echostep == 64}
             <a class="refer" class:active={refer_open}
                 on:click|preventDefault={() => {
                     refer_open = !refer_open;
                 }}>
-                <span>참고문건({data.echo_files_count > 0 ? `${data.echo_files_count}개` : '없음'})</span>
+                <span>참고문건({data.echo_files_count > 0 ? `${data.echo_files_count}개` : '0개'})</span>
                 {#if data.echo_files_count > 0}
                 <i></i>
                 {/if}
@@ -81,7 +80,6 @@
                 </div>
             </div>
                 {/if}
-            {/if}
             {/await}
             {/if}
         </div>

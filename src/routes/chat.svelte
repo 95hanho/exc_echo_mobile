@@ -371,7 +371,7 @@
     <div id="chatContent" class="main-content">
         {#if userType != 'tree'}
         <ChatNav bind:this={chatNav_this} {chatroom_list} on:store_scroll_position={store_scroll_position} 
-            {echo_id} />
+            {echo_id} on:get_chat={(e) => get_chat(e.detail.value)} />
         {/if}
         <!-- chat -->
         <div class="chat-container">
@@ -423,12 +423,24 @@
                             </div>
                             {/if}
                             <p>{@html chat.content.replace(/\n/g, "<br />")}</p>
-                            {#if isTest()}
-                                {#if chat.file}
+                            {#if chat.files}
                             <div class="file-link-zone">
-                                <a href={chat.file.name} download class="file-link">{chat.file.name}</a>
+                            {#each chat.files as file, index}
+                                <a href={file.url} class="file-link" 
+                                on:click|preventDefault={async () => {
+                                    const response = await fetch(file.url);
+                                    const blob = await response.blob();
+                                    const blobUrl = URL.createObjectURL(blob);
+                                    const a = document.createElement("a");
+                                    a.href = blobUrl;
+                                    a.download = file.name || "download"; // 다운로드 강제
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    document.body.removeChild(a);
+                                    URL.revokeObjectURL(blobUrl); // 메모리 정리
+                                }}>{file.name}</a>
+                            {/each}
                             </div>
-                                {/if}
                             {/if}
                             {#if chat.member_no != $userInfo.member_no}
                                 {#if isTest()}

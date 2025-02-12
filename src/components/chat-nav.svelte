@@ -11,8 +11,12 @@
 
     $: cur_echostep = new URLSearchParams($querystring).get('echostep');
     const go_otherChat = (echostep) => {
-        dispatch('store_scroll_position');
-        push(`${$location}?echostep=${echostep}`);
+        if(cur_echostep == echostep) {
+            dispatch('get_chat', {value:echostep});
+        } else {
+            dispatch('store_scroll_position');
+            push(`${$location}?echostep=${echostep}`);
+        }
     }
 
     let nav_touch = false; // nav touch될때
@@ -28,8 +32,10 @@
     export const set_nav_scrollLeft = async () => {
         await tick();
         const echo_record = get_echo_record(echo_id);
-        testlog("스크롤위치 세팅" + echo_record.nav_last_scroll);
-        nav_this.scrollLeft = echo_record.nav_last_scroll;
+        if(echo_record && echo_record.nav_last_scroll) {
+            testlog("스크롤위치 세팅" + echo_record.nav_last_scroll);
+            nav_this.scrollLeft = echo_record.nav_last_scroll;
+        }
     }
     const chatroom_list_change = () => {
         set_nav_scrollLeft();

@@ -40,7 +40,7 @@
                 <article class="article">
                     {#if needs.normal_need_list}
                     <div class="block">
-                        <h3 class="cont-title">일반니즈</h3>
+                        <h3 class="cont-title">맞춤교육 정보</h3>
                         <div>
                             <!-- <b>·{normal.title}</b> -->
                             <p>{@html needs.normal_need_list.replace(/\n/g, "<br />")}</p>

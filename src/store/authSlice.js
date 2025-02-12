@@ -73,7 +73,6 @@ const create_login = () => {
 			if (!uInfo.name && aToken && !getUser_ing) {
 				getUser_ing = true;
 				await authService.getUserInfo().then((data) => {
-					console.log(data);
 					userInfo.set({ ...data.user });
 					set_loginType(data.user.type);
 				});
