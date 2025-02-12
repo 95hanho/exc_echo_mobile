@@ -1,15 +1,8 @@
-import { userInfo } from "../store/authSlice";
 import { testlog } from "./env";
 
 // ridge, valley, tree 인지 가져오기
 export const get_loginType = () => {
-	let result = "";
-	const abc = userInfo.subscribe((v) => {
-		if (v.type) result = v.type;
-	});
-	abc();
-	if (!result) result = localStorage.getItem("type") || "ridge";
-	return result;
+	return localStorage.getItem("type") || "ridge";
 };
 // ridge, valley, tree 인지 저장
 export const set_loginType = (type) => {
@@ -64,12 +57,23 @@ export const set_echo_record = (echo_id, valObj) => {
 	}
 	localStorage.setItem("echo_record", JSON.stringify(origin));
 };
-//
+// 에코 에코스텝마다 채팅 마지막 스크롤위치 저장
 export const set_echo_record_last_scroll = (echo_id, echostep, chat_last_scroll) => {
 	let obj = get_echo_record(echo_id) || null;
 	if (obj) {
 		testlog(`set_echo_record_last_scroll ${echo_id} ${echostep} ${chat_last_scroll}`);
 		obj[echostep].chat_last_scroll = chat_last_scroll;
+		const origin = JSON.parse(localStorage.getItem("echo_record")) || {};
+		origin[echo_id] = obj;
+		localStorage.setItem("echo_record", JSON.stringify(origin));
+	}
+};
+// 에코 nav 스크롤위치 저장
+export const set_echo_nav_last_scroll = (echo_id, nav_last_scroll) => {
+	let obj = get_echo_record(echo_id) || null;
+	if (obj) {
+		testlog(`set_echo_nav_last_scroll ${echo_id} ${nav_last_scroll}`);
+		obj.nav_last_scroll = nav_last_scroll;
 		const origin = JSON.parse(localStorage.getItem("echo_record")) || {};
 		origin[echo_id] = obj;
 		localStorage.setItem("echo_record", JSON.stringify(origin));

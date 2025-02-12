@@ -1,7 +1,7 @@
 import wrap from "svelte-spa-router/wrap";
 import Main from "./routes/main.svelte";
 import Test from "./routes/Test.svelte";
-import { last_connect_url, loginOn } from "./store/authSlice";
+import { last_connect_url, loginOn, userInfo } from "./store/authSlice";
 import { loc, location, push, querystring, replace } from "svelte-spa-router";
 import { modal_alert } from "./store/modalSlice";
 import Login from "./routes/login.svelte";

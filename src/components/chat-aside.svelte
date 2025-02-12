@@ -3,10 +3,11 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { link, location } from 'svelte-spa-router';
 	import { fly, slide } from 'svelte/transition';
-	import { loginOn } from '../store/authSlice';
+	import { loginOn, userInfo } from '../store/authSlice';
 	import { isTest } from '../lib/env';
-	import { get_loginType } from '../lib/local_store';
 	import { addService } from '../api';
+
+    $:userType = $userInfo.type;
 
     export let echo_id;
     export let asideOpen;
@@ -85,7 +86,7 @@
             {/if}
         </div>
 
-        <button type="button" class="nav-logout" on:click={() => loginOn.logout(get_loginType())}><i></i>로그아웃</button>
+        <button type="button" class="nav-logout" on:click={() => loginOn.logout(userType)}><i></i>로그아웃</button>
     </div>
 </aside>
 {/if}

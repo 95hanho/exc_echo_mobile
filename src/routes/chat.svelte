@@ -12,8 +12,10 @@
 	import { chat_scroll_near_last, isdivivedDate, not_scroll, scroll_move_last, scroll_move_read, shake_message, updateViewportHeight, } from "../lib/ui";
 	import Lodding from '../components/lodding.svelte';
 	import { isTest, testlog } from "../lib/env";
-	import { get_echo_record, get_loginType, set_echo_record, set_echo_record_last_scroll } from '../lib/local_store.js';
+	import { get_echo_record, set_echo_record, set_echo_record_last_scroll } from '../lib/local_store.js';
 	import ChatInput from '../components/chat/chat-input.svelte';
+
+    $:userType = $userInfo.type;
 
     export let params = {};
     $: echo_id = params.echo_id; // 에코아이디
@@ -39,6 +41,7 @@
     let readend_chat = null; // 읽어야하는 마지막 채팅
     let read_ele = null; // 읽시시작해야하는 채팅 element
     let chatWrap_hidden = false; // 채팅창 잠시 가리기
+    let chatNav_this = null; // ChatNav 컴포넌트
     
     // 채팅가져오기
     const get_chat = async (es, req_page, no_read) => {
@@ -48,13 +51,13 @@
         if(req_page != undefined) obj.page = req_page;
         if(no_read) obj.no_read = no_read;
         add_loding = true;
-        if(!es && get_loginType() != 'tree') {
+        if(!es && userType != 'tree') {
             replace(`${$location}?echostep=2`);
             return;
         }
         // 저장된 로컬데이터 가져오기, 저장 스크롤 위치가기
         let has_local = false;
-        let not_equal_chat_list = false; // 로컬데이터와 같은지?
+        let not_equal_chat_list = false; // 로컬데이터와 같지않다.
         let chat_last_scroll = undefined;
         if(req_page == undefined) {
             const echo_record = get_echo_record(echo_id);
@@ -67,10 +70,6 @@
                 const list = [...echo_record[es].chat_list];
                 chat_list = list;
                 chat_last_scroll = echo_record[es].chat_last_scroll;
-                // await tick();
-                // if(echo_record[es].chat_last_scroll) {
-                //     chatWrap_ele.scrollTop = echo_record[es].chat_last_scroll;
-                // } else scroll_move();
             }
         }
         // 채팅리스트 가져오기 API
@@ -162,6 +161,7 @@
             }
         });
         add_loding = false;
+        // 로컬데이터가 있고, 로컬데이터와 같다면면
         if(has_local && !not_equal_chat_list) {
             await tick();
             if(chat_last_scroll) {
@@ -365,12 +365,13 @@
     });
 </script>
 
-<div id="chat" in:fade={{duration: 500}} class:theme-valley={get_loginType() == 'valley'}
-    class:theme-tree={get_loginType() == 'tree'}>
+<div id="chat" in:fade={{duration: 500}} class:theme-valley={userType == 'valley'}
+    class:theme-tree={userType == 'tree'}>
     <ChatHeader {change_asideOpen} {echo_title}/>
     <div id="chatContent" class="main-content">
-        {#if get_loginType() != 'tree'}
-        <ChatNav {chatroom_list} on:store_scroll_position={store_scroll_position} />
+        {#if userType != 'tree'}
+        <ChatNav bind:this={chatNav_this} {chatroom_list} on:store_scroll_position={store_scroll_position} 
+            {echo_id} />
         {/if}
         <!-- chat -->
         <div class="chat-container">

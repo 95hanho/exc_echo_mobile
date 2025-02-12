@@ -5,7 +5,6 @@
 	import AddHeader from "../components/add-header.svelte";
 	import ChatAside from "../components/chat-aside.svelte";
 	import { addService } from "../api";
-	import { get_loginType } from '../lib/local_store';
 
     export let params = {};
     setContext('echo_id', params.echo_id);

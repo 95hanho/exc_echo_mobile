@@ -73,13 +73,9 @@ const create_login = () => {
 			if (!uInfo.name && aToken && !getUser_ing) {
 				getUser_ing = true;
 				await authService.getUserInfo().then((data) => {
-					// console.log(data);
-					const login_type = get_loginType();
+					console.log(data);
 					userInfo.set({ ...data.user });
 					set_loginType(data.user.type);
-					if (login_type && login_type != data.user.type) {
-						location.reload();
-					}
 				});
 				getUser_ing = false;
 			}
@@ -95,7 +91,8 @@ export const loginOn = create_login();
 export const userInfo = writable({
 	member_no: "",
 	name: "",
-	type: "", // valley, ridge, tree
+	type: get_loginType(), // valley, ridge, tree
 	position: "",
+	role:"",
 });
 export const last_connect_url = writable("");

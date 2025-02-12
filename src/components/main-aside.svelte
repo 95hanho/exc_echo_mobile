@@ -4,7 +4,8 @@
 	import { loginOn, userInfo } from '../store/authSlice';
 	import { modal_dialog_list } from '../store/modalSlice';
 	import { isTest } from '../lib/env';
-	import { get_loginType } from '../lib/local_store';
+
+    $:userType = $userInfo.type;
 
     export let asideOpen;
     export let change_asideOpen;
@@ -32,7 +33,7 @@
         </header>
 
         <div class="nav-menu">
-            {#if get_loginType() == 'valley'}
+            {#if userType == 'valley'}
             <a href="https://mangrove-porpoise-528.notion.site/18bcba7f51b0806499b5d2668a5c9496?pvs=4" target="_blank">
                 <span>업데이트 내역</span><i></i>
             </a>
@@ -40,18 +41,18 @@
                 <span>요청/건의</span><i></i>
             </a>
             {/if}
-            {#if get_loginType() != 'valley'}
+            {#if userType != 'valley'}
             <a href="https://docs.google.com/forms/d/e/1FAIpQLSfF2yInUC5rWdyFMDu4gbuYrr0ZT4UuGlGO7qp5VU6O9GVOHg/viewform" target="_blank">
                 <span>시스템 장애신고</span><i></i>
             </a>
             {/if}
             
-            {#if $modal_dialog_list && get_loginType() == 'ridge'}
+            {#if $modal_dialog_list && userType == 'ridge'}
             <a href="#"><span>계정설정</span><i></i></a>
             {/if}
         </div>
 
-        <button type="button" class="nav-logout" on:click={() => loginOn.logout(get_loginType())}><i></i>로그아웃</button>
+        <button type="button" class="nav-logout" on:click={() => loginOn.logout(userType)}><i></i>로그아웃</button>
     </div>
 </aside>
 {/if}

@@ -11,10 +11,12 @@
 	import { get_main_last_scroll, set_main_last_scroll } from "../lib/ui";
 	import { main_last_scroll } from "../store/uiSlice";
 	import MainAside from "../components/main-aside.svelte";
-	import { get_loginType, get_search_keyword, get_search_type, remove_search_keyword, set_search_keyword, set_search_type } from "../lib/local_store";
+	import { get_search_keyword, get_search_type, remove_search_keyword, set_search_keyword, set_search_type } from "../lib/local_store";
     import diagonal from '../assets/images/diagonal.png';
 
     let type = ""; // ridge valley tree
+    $:userType = $userInfo.type;
+    $:userRole = $userInfo.role;
 
     /* 에코 상단고정 ===================================== */
     let confirm_id = 0;
@@ -107,7 +109,7 @@
     const change_asideOpen = () => asideOpen = !asideOpen;
 
     onMount(() => {
-        type = get_loginType();
+        type = userType;
         sc_type = get_search_type();
         sc_keyword = get_search_keyword();
         if(type == "valley" && sc_keyword) {
@@ -120,8 +122,8 @@
     });
 </script>
 
-<div id="main" class:theme-valley={get_loginType() == 'valley'}
-class:theme-tree={get_loginType() == 'tree'}>
+<div id="main" class:theme-valley={userType == 'valley'}
+class:theme-tree={userType == 'tree'}>
     <MainHeader {change_asideOpen} />
     <div class="main-content">
         <nav class="top-group" style={`height: ${search_on ? 140 : 112}px`}>
@@ -136,7 +138,7 @@ class:theme-tree={get_loginType() == 'tree'}>
                             modal_dialog.open();
                         }
                     }}>계정설정</a> -->
-                {#if search_on && get_loginType() == 'valley'}
+                {#if search_on && userType == 'valley'}
                 <a href="#" class="btn-setting" role="button" tabindex="0"
                     on:click|preventDefault={() => {
                         search_on = false;
@@ -155,7 +157,7 @@ class:theme-tree={get_loginType() == 'tree'}>
                             get_echos();
                         }
                     }}>검색취소</a>
-                {:else if !search_on && get_loginType() == 'valley'}
+                {:else if !search_on && userType == 'valley' && (userRole && userRole != 'L')}
                 <a href="#" class="btn-setting" role="button" tabindex="0"
                     on:click|preventDefault={() => {
                         search_on = true;
@@ -172,7 +174,7 @@ class:theme-tree={get_loginType() == 'tree'}>
                     }}>과정검색</a>
                 {/if}
             </div>
-            {#if search_on && get_loginType() == "valley"}
+            {#if search_on && userType == "valley"}
             <div class="container">
                 <form on:submit|preventDefault={echo_search_before}>
                     <div class="main-search">
@@ -254,7 +256,7 @@ class:theme-tree={get_loginType() == 'tree'}>
                         </div>
                         {/if}
                     </div>
-                    {#if get_loginType() == 'valley' && (!echo.echo_publish_type || echo.echo_publish_type == 'REGIST')}
+                    {#if userType == 'valley' && (!echo.echo_publish_type || echo.echo_publish_type == 'REGIST')}
                     <button type="button" class="pin" class:active={echo.top_fixed}
                         on:click|stopPropagation={() => {
                             if(echo.top_fixed) {

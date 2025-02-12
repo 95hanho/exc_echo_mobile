@@ -3,11 +3,12 @@
 	import { fade } from "svelte/transition";
 	import { isTest } from "../../lib/env";
 	import { modal_alert, modal_chatAdd, modal_chatAdd_type } from "../../store/modalSlice";
-	import { get_loginType } from "../../lib/local_store";
 	import { chatService } from "../../api";
     import moment from "moment/moment";
 	import { userInfo } from "../../store/authSlice";
 	import { chat_scroll_near_last, scroll_move_last } from "../../lib/ui";
+
+    $:userType = $userInfo.type;
 
     export let bottom_btn_on;
     export let readend_chat;
@@ -76,7 +77,7 @@
         if(ing_sendChat) return;
         ing_sendChat = true;
         const obj = {echo_id, chat_txt};
-        if(get_loginType() != 'tree') {
+        if(userType != 'tree') {
             obj.echostep = echostep;
         }
         if(response_open) obj.chat_id = response_chat.chat_id;
