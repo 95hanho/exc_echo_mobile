@@ -27,7 +27,7 @@
     let get_document_await = null;
     const get_document = () => {
         get_document_await = addService.get_document({
-            echo_id, echostep
+            echo_id, echostep : userType == "tree" ? 16 : echostep,
         }).then((data) => {
             if(data.echo_files.length > 7) {
                 data.echo_files = data.echo_files.slice(0, 7);
@@ -36,7 +36,7 @@
         });
     }
 
-    $:if(asideOpen && echostep) {
+    $:if(asideOpen && (echostep || userType == "tree")) {
         get_document();
     }
  </script>
@@ -59,9 +59,8 @@
             {#if isTest()}
             <a use:link href="/chat/{echo_id}/outline"><span>과정개요</span><i></i></a>
             <a use:link href="/chat/{echo_id}/attach-file"><span>첨부파일</span><i></i></a>
-            {:else}
-            <a href="#" on:click|preventDefault><span>과정개요(준비중)</span><i></i></a>
             {#await get_document_await then data}
+            {#if data}
             <a class="refer" class:active={refer_open}
                 on:click|preventDefault={() => {
                     refer_open = !refer_open;
@@ -80,6 +79,31 @@
                 </div>
             </div>
                 {/if}
+            {/if}
+            {/await}
+            {:else}
+            <a href="#" on:click|preventDefault><span>과정개요(준비중)</span><i></i></a>
+            {#await get_document_await then data}
+            {#if data}
+            <a class="refer" class:active={refer_open}
+                on:click|preventDefault={() => {
+                    refer_open = !refer_open;
+                }}>
+                <span>참고문건({data.echo_files_count > 0 ? `${data.echo_files_count}개` : '0개'})</span>
+                {#if data.echo_files_count > 0}
+                <i></i>
+                {/if}
+            </a>
+                {#if refer_open && data.echo_files_count > 0}
+            <div class="refer-file">
+                <div in:slide={{duration:500}} out:slide={{duration:500}}>
+                    {#each data.echo_files as echo_file, index}
+                    <p>· <a href={echo_file.echo_file_url} download>{echo_file.echo_file_name}</a></p>
+                    {/each}
+                </div>
+            </div>
+                {/if}
+            {/if}
             {/await}
             {/if}
         </div>

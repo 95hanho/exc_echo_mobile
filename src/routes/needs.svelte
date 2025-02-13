@@ -6,6 +6,9 @@
 	import ChatAside from "../components/chat-aside.svelte";
 	import { addService } from "../api";
 	import { get_echo_record } from '../lib/local_store';
+	import { userInfo } from '../store/authSlice';
+    
+    $:userType = $userInfo.type;
 
     export let params = {};
     setContext('echo_id', params.echo_id);
@@ -18,7 +21,7 @@
     const init = async () => {
         get_needs_await = await addService.get_needs({
             echo_id: params.echo_id,
-            echostep
+            echostep: userType == "tree" ? 16 : echostep,
         }).then((data) => {
             return data;
         });
@@ -62,17 +65,12 @@
                     {/each} -->
                 </article>
                 <article class="article">
-                    {#each needs.relation_need_list as relation, index}
                     <div class="block">
-                        {#if index == 0}
-                        <h3 class="cont-title">교육일정</h3>
-                        {/if}
+                        <h3 class="cont-title">강사에게 요청</h3>
                         <div>
-                            <b>·{relation.title}</b>
-                            <p>{@html relation.content}</p>
+                            <p>{@html needs.relation_need_list.replace(/\n/g, "<br />")}</p>
                         </div>
                     </div>
-                    {/each}
                 </article>
                 {/if}
                 {/await}
