@@ -5,6 +5,7 @@
 	import AddHeader from "../components/add-header.svelte";
 	import ChatAside from "../components/chat-aside.svelte";
 	import { addService } from "../api";
+	import { get_echo_record } from '../lib/local_store';
 
     export let params = {};
     setContext('echo_id', params.echo_id);
@@ -21,10 +22,11 @@
         }).then((data) => {
             return data;
         });
-    }
+    } 
     onMount(() => {
-        let echo_record = JSON.parse(localStorage.getItem('echo_record')) || {}
-        echostep = echo_record[params.echo_id] || 2;
+        let echo_record = get_echo_record(params.echo_id);
+        echostep = echo_record ? echo_record.echostep : 2;
+        console.log(echostep);
         init();
     });
 

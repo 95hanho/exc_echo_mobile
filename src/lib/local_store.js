@@ -60,7 +60,7 @@ export const set_echo_record = (echo_id, valObj) => {
 // 에코 에코스텝마다 채팅 마지막 스크롤위치 저장
 export const set_echo_record_last_scroll = (echo_id, echostep, chat_last_scroll) => {
 	let obj = get_echo_record(echo_id) || null;
-	if (obj) {
+	if (obj[echostep]) {
 		testlog(`set_echo_record_last_scroll ${echo_id} ${echostep} ${chat_last_scroll}`);
 		obj[echostep].chat_last_scroll = chat_last_scroll;
 		const origin = JSON.parse(localStorage.getItem("echo_record")) || {};
